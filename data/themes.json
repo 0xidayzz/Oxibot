@@ -1,0 +1,142 @@
+{
+  "themes": {
+    "purple": {
+      "name": "Violet (défaut)",
+      "color": "0x9B59B6",
+      "color_hex": "#9B59B6",
+      "emojis": {
+        "music": "🎵",
+        "artist": "🎤",
+        "album": "💿",
+        "stats": "📊",
+        "fire": "🔥",
+        "trophy": "🏆",
+        "chart": "📈",
+        "calendar": "📅",
+        "headphones": "🎧",
+        "new": "✨"
+      }
+    },
+    "blue": {
+      "name": "Bleu",
+      "color": "0x3498DB",
+      "color_hex": "#3498DB",
+      "emojis": {
+        "music": "🎵",
+        "artist": "🎤",
+        "album": "💿",
+        "stats": "📊",
+        "fire": "🔥",
+        "trophy": "🏆",
+        "chart": "📈",
+        "calendar": "📅",
+        "headphones": "🎧",
+        "new": "✨"
+      }
+    },
+    "green": {
+      "name": "Vert Spotify",
+      "color": "0x1DB954",
+      "color_hex": "#1DB954",
+      "emojis": {
+        "music": "🎵",
+        "artist": "🎤",
+        "album": "💿",
+        "stats": "📊",
+        "fire": "🔥",
+        "trophy": "🏆",
+        "chart": "📈",
+        "calendar": "📅",
+        "headphones": "🎧",
+        "new": "✨"
+      }
+    },
+    "red": {
+      "name": "Rouge",
+      "color": "0xE74C3C",
+      "color_hex": "#E74C3C",
+      "emojis": {
+        "music": "🎵",
+        "artist": "🎤",
+        "album": "💿",
+        "stats": "📊",
+        "fire": "🔥",
+        "trophy": "🏆",
+        "chart": "📈",
+        "calendar": "📅",
+        "headphones": "🎧",
+        "new": "✨"
+      }
+    },
+    "pink": {
+      "name": "Rose",
+      "color": "0xE91E63",
+      "color_hex": "#E91E63",
+      "emojis": {
+        "music": "🎵",
+        "artist": "🎤",
+        "album": "💿",
+        "stats": "📊",
+        "fire": "🔥",
+        "trophy": "🏆",
+        "chart": "📈",
+        "calendar": "📅",
+        "headphones": "🎧",
+        "new": "✨"
+      }
+    },
+    "orange": {
+      "name": "Orange",
+      "color": "0xE67E22",
+      "color_hex": "#E67E22",
+      "emojis": {
+        "music": "🎵",
+        "artist": "🎤",
+        "album": "💿",
+        "stats": "📊",
+        "fire": "🔥",
+        "trophy": "🏆",
+        "chart": "📈",
+        "calendar": "📅",
+        "headphones": "🎧",
+        "new": "✨"
+      }
+    },
+    "yellow": {
+      "name": "Jaune",
+      "color": "0xF1C40F",
+      "color_hex": "#F1C40F",
+      "emojis": {
+        "music": "🎵",
+        "artist": "🎤",
+        "album": "💿",
+        "stats": "📊",
+        "fire": "🔥",
+        "trophy": "🏆",
+        "chart": "📈",
+        "calendar": "📅",
+        "headphones": "🎧",
+        "new": "✨"
+      }
+    },
+    "dark": {
+      "name": "Sombre",
+      "color": "0x2C3E50",
+      "color_hex": "#2C3E50",
+      "emojis": {
+        "music": "🎵",
+        "artist": "🎤",
+        "album": "💿",
+        "stats": "📊",
+        "fire": "🔥",
+        "trophy": "🏆",
+        "chart": "📈",
+        "calendar": "📅",
+        "headphones": "🎧",
+        "new": "✨"
+      }
+    }
+  },
+  "default_theme": "purple",
+  "description": "Fichier de configuration des thèmes du bot Spotify Tracker"
+}
