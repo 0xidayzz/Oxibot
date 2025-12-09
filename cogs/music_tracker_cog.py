@@ -1,9 +1,8 @@
 # cogs/music_tracker_cog.py
 import discord
 from discord.ext import commands, tasks
-import os
 from datetime import datetime
-import pytz
+import time
 
 # Import des helpers
 from helpers.spotify_auth import spotify_client
@@ -25,26 +24,25 @@ class MusicTracker(commands.Cog):
         # 1. Récupérer l'information Spotify
         current_track = spotify_client.get_currently_playing()
 
-        if current_track and current_track.get('is_playing'):
+        if current_track and current_track.get('is_playing') and current_track.get('item'):
+            track_data = current_track['item']
+            
             track_info = {
-                'id': current_track['item']['id'],
-                'name': current_track['item']['name'],
-                'artist': current_track['item']['artists'][0]['name'],
-                'album': current_track['item']['album']['name'],
-                'image_url': current_track['item']['album']['images'][0]['url'],
-                'duration_ms': current_track['item']['duration_ms'],
+                'id': track_data['id'],
+                'name': track_data['name'],
+                'artist': track_data['artists'][0]['name'],
+                'album': track_data['album']['name'],
+                'image_url': track_data['album']['images'][0]['url'],
+                'duration_ms': track_data['duration_ms'],
                 'progress_ms': current_track['progress_ms'],
-                'url': current_track['item']['external_urls']['spotify']
+                'url': track_data['external_urls']['spotify']
             }
             
             # 2. Vérifier si la musique a changé
             if track_info['id'] != self.last_track_id:
                 self.last_track_id = track_info['id']
                 
-                # 3. Loguer dans la DB (pour les statistiques)
-                # NOTE: Pour la première fois, on suppose que l'écoute commence maintenant
-                # Pour un tracking parfait, on doit loguer quand la chanson se termine.
-                # Simplification: on log quand la chanson change.
+                # 3. Loguer dans la DB
                 log_track(track_info)
 
                 # 4. Envoyer le message Discord
@@ -63,34 +61,31 @@ class MusicTracker(commands.Cog):
     async def send_music_update(self, track_info):
         """Crée et envoie l'Embed de la musique actuelle."""
         
-        # --- Créez le style d'Embed "Violet Simple" (le thème par défaut) ---
-        
         # Conversion du temps (ms -> min:sec)
         total_time = divmod(track_info['duration_ms'] // 1000, 60)
-        progress_time = divmod(track_info['progress_ms'] // 1000, 60)
         
-        # Heure de Paris pour le lancement
+        # Heure de Paris
         now_paris = datetime.now(PARIS_TZ).strftime('%H:%M:%S')
 
+        # Thème par défaut: Violet Simple
         embed = discord.Embed(
-            title=f"🎶 {track_info['name']}",
-            description=f"**{track_info['artist']}** - *{track_info['album']}*",
+            title=f"🎶 Nouvelle Musique Lancée : {track_info['name']}",
+            description=f"**Artiste :** {track_info['artist']}\n**Album :** *{track_info['album']}*",
             color=0x9B59B6 # Violet
         )
         embed.set_thumbnail(url=track_info['image_url'])
         
-        # Affichage du temps
-        embed.add_field(name="Durée", 
-                        value=f"`{total_time[0]:02}:{total_time[1]:02}`", 
+        embed.add_field(name="Durée du titre", 
+                        value=f"⏱️ `{total_time[0]:02}:{total_time[1]:02}`", 
                         inline=True)
-        embed.add_field(name="Lancement", 
-                        value=f"⌚ {now_paris} (Heure de Paris)", 
+        embed.add_field(name="Lancement à", 
+                        value=f"⌚ {now_paris} (CET)", 
                         inline=True)
         embed.add_field(name="Lien", 
-                        value=f"[Écouter sur Spotify]({track_info['url']})", 
+                        value=f"🔗 [Écouter sur Spotify]({track_info['url']})", 
                         inline=False)
         
-        embed.set_footer(text="Suivi en temps réel | Bot propulsé par Spotify")
+        embed.set_footer(text="Suivi en temps réel | Tracker")
 
         # --- Envoi à tous les serveurs ---
         for guild in self.bot.guilds:
@@ -99,37 +94,30 @@ class MusicTracker(commands.Cog):
                 channel = self.bot.get_channel(channel_id)
                 if channel:
                     try:
-                        # Effacer le message précédent (optionnel pour garder le salon propre)
-                        # Ceci nécessite l'historique de messages. Simplification: on envoie un nouveau message.
                         await channel.send(embed=embed)
                     except discord.Forbidden:
-                        print(f"Pas les permissions d'envoyer dans le salon {channel.name}")
-
-    @track_changes_loop.before_loop
-    async def before_track_changes(self):
-        print("Attente du démarrage du bot et du client Spotify...")
-        await self.bot.wait_until_ready()
-        
-    # --- Commandes ---
+                        print(f"Pas les permissions d'envoyer dans le salon {channel.name} de {guild.name}")
 
     @commands.command(name='song')
     async def song_command(self, ctx):
-        """Affiche le titre actuellement écouté (sans attendre le loop)."""
+        """Affiche le titre actuellement écouté."""
         current_track = spotify_client.get_currently_playing()
         if not current_track or not current_track.get('is_playing'):
             return await ctx.send("Je ne vous vois écouter aucune musique actuellement.")
         
-        # Réutilise la logique pour générer l'embed
+        track_data = current_track['item']
         track_info = {
-            'id': current_track['item']['id'],
-            'name': current_track['item']['name'],
-            'artist': current_track['item']['artists'][0]['name'],
-            'album': current_track['item']['album']['name'],
-            'image_url': current_track['item']['album']['images'][0]['url'],
-            'duration_ms': current_track['item']['duration_ms'],
+            'id': track_data['id'],
+            'name': track_data['name'],
+            'artist': track_data['artists'][0]['name'],
+            'album': track_data['album']['name'],
+            'image_url': track_data['album']['images'][0]['url'],
+            'duration_ms': track_data['duration_ms'],
             'progress_ms': current_track['progress_ms'],
-            'url': current_track['item']['external_urls']['spotify']
+            'url': track_data['external_urls']['spotify']
         }
+        
+        # Envoie l'embed dans le canal de commande
         await self.send_music_update(track_info)
 
 def setup(bot):

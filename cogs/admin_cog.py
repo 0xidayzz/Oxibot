@@ -1,5 +1,6 @@
-# SQUELETTE pour cogs/admin_cog.py
-# ... imports ...
+# cogs/admin_cog.py
+import discord
+from discord.ext import commands
 from helpers.database import get_db_connection
 
 class Admin(commands.Cog):
@@ -9,9 +10,8 @@ class Admin(commands.Cog):
     @commands.command(name='setchannel')
     @commands.has_permissions(administrator=True)
     async def set_channel_command(self, ctx, type_name, channel: discord.TextChannel = None):
-        """Définit le salon pour les différents types d'annonces."""
+        """Définit le salon pour les différents types d'annonces (musique, annonce, wrapped, follow)."""
         
-        # Le salon est soit celui mentionné, soit le salon actuel
         target_channel = channel or ctx.channel 
         
         type_map = {
@@ -27,15 +27,33 @@ class Admin(commands.Cog):
         db_column = type_map[type_name.lower()]
         conn = get_db_connection()
         
-        # Upsert: Insérer si non existant, mettre à jour sinon
+        # Met à jour ou Insère le channel ID
         conn.execute(f"""
-            INSERT OR REPLACE INTO server_settings (guild_id, {db_column})
-            VALUES (?, COALESCE((SELECT {db_column} FROM server_settings WHERE guild_id = ?), ?))
-        """, (ctx.guild.id, ctx.guild.id, target_channel.id))
+            INSERT INTO server_settings (guild_id, {db_column})
+            VALUES (?, ?)
+            ON CONFLICT(guild_id) DO UPDATE SET {db_column}=excluded.{db_column}
+        """, (ctx.guild.id, target_channel.id))
         
         conn.commit()
         conn.close()
         
         await ctx.send(f"✅ Le salon pour les **{type_name.upper()}** a été défini sur {target_channel.mention}.")
 
-# ... suite des commandes admin (ex: /theme)
+    @commands.command(name='theme')
+    @commands.has_permissions(administrator=True)
+    async def theme_command(self, ctx, new_theme: str = 'default'):
+        """Permet de changer le thème d'affichage (actuellement 'default' = Violet)."""
+        # Logique simplifiée. La gestion des thèmes serait implémentée dans MusicTracker.send_music_update
+        
+        conn = get_db_connection()
+        conn.execute(
+            "INSERT OR REPLACE INTO server_settings (guild_id, theme) VALUES (?, ?) ON CONFLICT(guild_id) DO UPDATE SET theme=excluded.theme",
+            (ctx.guild.id, new_theme.lower())
+        )
+        conn.commit()
+        conn.close()
+        
+        await ctx.send(f"🎨 Thème mis à jour à **{new_theme.lower()}**. Le bot utilisera ce style pour les prochains embeds.")
+
+def setup(bot):
+    bot.add_cog(Admin(bot))
